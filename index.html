@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPERACIÓN: CÓDIGO SST - Escape Room Digital</title>
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --card-bg: #151c2c;
+            --card-border: #2a364f;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            padding-bottom: 60px;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            flex-wrap: wrap;
+            gap: 15px;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+        }
+
+        .brand-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-display {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            text-align: center;
+            background: rgba(0,0,0,0.3);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            font-family: monospace;
+        }
+
+        .timer-warning { color: var(--accent-yellow); animation: pulse 1.5s infinite; }
+        .timer-critical { color: var(--accent-red); animation: pulse 0.8s infinite; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-blue), #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary { background: #334155; }
+        .btn-secondary:hover { background: #475569; box-shadow: none; }
+        .btn-danger { background: linear-gradient(135deg, var(--accent-red), #991b1b); }
+        .btn-success { background: linear-gradient(135deg, var(--accent-green), #047857); }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .screen.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .intro-hero {
+            text-align: center;
+            padding: 40px 20px;
+            background: radial-gradient(circle at center, rgba(30, 58, 138, 0.3) 0%, rgba(11, 15, 25, 0.9) 100%);
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            background: #0f172a;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .module-card {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .module-card.unlocked {
+            border-color: var(--accent-green);
+            background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, var(--card-bg) 100%);
+        }
+
+        .module-status {
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        .status-unlocked { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+        .status-ready { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+
+        .code-piece-badge {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent-yellow);
+            border: 1px dashed var(--accent-yellow);
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-family: monospace;
+        }
+
+        .dfd-container {
+            background: #090d16;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .dfd-element { cursor: pointer; transition: all 0.2s ease; }
+        .dfd-element:hover { filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8)); }
+        .dfd-element.solved { filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.9)); }
+
+        .table-responsive {
+            overflow-x: auto;
+            max-height: 380px;
+            overflow-y: auto;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+
+        .data-table th {
+            background: #1e293b;
+            color: var(--accent-blue);
+            padding: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #1e293b;
+            color: var(--text-main);
+        }
+
+        .data-table tr:hover { background: rgba(59, 130, 246, 0.15); cursor: pointer; }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 15px;
+            grid-column: 1 / -1;
+        }
+
+        .kpi-card {
+            background: #0f172a;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        .chart-card {
+            background: #0f172a;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-body {
+            background: var(--card-bg);
+            border: 2px solid var(--accent-blue);
+            border-radius: 12px;
+            max-width: 650px;
+            width: 100%;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: #1e293b;
+            border: 1px solid var(--card-border);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .keypad-container {
+            max-width: 480px;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        .code-input-display {
+            font-family: monospace;
+            font-size: 1.8rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            padding: 15px;
+            background: #090d16;
+            border: 2px solid var(--accent-blue);
+            border-radius: 8px;
+            color: var(--accent-green);
+            margin-bottom: 15px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid var(--card-border);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .instructor-badge {
+            background: var(--accent-purple);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .hint-box {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--accent-yellow);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .hash-box {
+            background: #090d16;
+            border: 1px stroke var(--accent-green);
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: var(--accent-green);
+            word-break: break-all;
+            margin-top: 10px;
+        }
+
+        .questions-card {
+            background: #0f172a;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .q-title {
+            color: var(--accent-blue);
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 8px;
+        }
+
+        .attempts-counter {
+            font-size: 0.85rem;
+            color: var(--accent-yellow);
+            margin-top: 5px;
+        }
+
+        .interactive-box {
+            background: #0f172a;
+            border: 1px solid var(--accent-blue);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+
+    <!-- SHEETJS DESDE PANEL DOCENTE -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- BARRA SUPERIOR -->
+    <header class="header-bar" id="globalHeader" style="display: none;">
+        <div class="brand-title">
+            <span>⚡ OPERACIÓN: CÓDIGO SST</span>
+        </div>
+        <div class="stats-display">
+            <div class="stat-box">
+                <div class="stat-label">Puntaje</div>
+                <div class="stat-value" id="scoreDisplay" style="color: var(--accent-green);">1000</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Tiempo Restante</div>
+                <div class="stat-value" id="timerDisplay">45:00</div>
+            </div>
+            <button class="btn btn-secondary" onclick="toggleAudio()" id="audioBtn" title="Sonido On/Off">🔊 Audio</button>
+            <button class="btn btn-secondary" onclick="openInstructorModal()">🔑 Docente</button>
+        </div>
+    </header>
+
+    <!-- PANTALLA 1: REGISTRO -->
+    <section id="screenIntro" class="screen active">
+        <div class="intro-hero">
+            <h1 style="font-size: 2.2rem; color: var(--accent-blue); margin-bottom: 10px;">OPERACIÓN: CÓDIGO SST</h1>
+            <p style="font-size: 1.1rem; color: var(--accent-yellow); font-weight: bold; margin-bottom: 15px;">
+                Fundamentos de Análisis de Datos en Seguridad y Salud en el Trabajo
+            </p>
+            <p style="color: var(--text-muted); max-width: 800px; margin: 0 auto;">
+                Resuelve la actividad interactiva de cada módulo y responde las preguntas asociadas para obtener las piezas del código maestro. Cada intento fallido descontará puntos de la calificación. Tiempo total: 45 minutos.
+            </p>
+        </div>
+
+        <div class="card" style="max-width: 650px; margin: 0 auto;">
+            <h3 style="margin-bottom: 20px; color: var(--accent-blue); text-align: center;">REGISTRO DEL EQUIPO</h3>
+            <form id="setupForm" onsubmit="startMission(event)">
+                <div class="form-group">
+                    <label for="teamName">Nombre del Equipo *</label>
+                    <input type="text" id="teamName" class="form-control" placeholder="Ejemplo: Analistas Alpha" required>
+                </div>
+                <div class="form-group">
+                    <label for="teamMembers">Integrantes *</label>
+                    <input type="text" id="teamMembers" class="form-control" placeholder="Nombres de los integrantes del equipo" required>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%; justify-content: center; margin-top: 10px; font-size: 1.1rem; padding: 15px;">
+                    🚀 INICIAR ACTIVIDAD (45:00 MIN)
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- PANTALLA 2: MAPA DE MÓDULOS -->
+    <section id="screenMap" class="screen">
+        <div class="card">
+            <h2>📍 PANEL DE MÓDULOS Y DESAFÍOS (LIBRE ACCESO)</h2>
+            <p style="color: var(--text-muted); margin-top: 5px;">
+                Puedes ingresar a cualquiera de los 4 módulos en el orden que prefieras. Completa todos para desbloquear el código maestro.
+            </p>
+        </div>
+
+        <div class="modules-grid">
+            <!-- Módulo 1 -->
+            <div class="module-card" id="modCard1" onclick="goToChallenge(1)">
+                <span class="module-status status-ready" id="modStatus1">🔓 DISPONIBLE</span>
+                <h3 style="margin-bottom: 8px;">MÓDULO 01</h3>
+                <p style="font-weight: bold; color: var(--accent-blue);">EL DFD SABOTEADO</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 10px 0;">
+                    Inspección interactiva de diagramas + 5 Preguntas conceptuales DFD.
+                </p>
+                <div id="piece1Container" style="display:none;" class="code-piece-badge">PIEZA 1: 7</div>
+            </div>
+
+            <!-- Módulo 2 -->
+            <div class="module-card" id="modCard2" onclick="goToChallenge(2)">
+                <span class="module-status status-ready" id="modStatus2">🔓 DISPONIBLE</span>
+                <h3 style="margin-bottom: 8px;">MÓDULO 02</h3>
+                <p style="font-weight: bold; color: var(--accent-blue);">EL DATO INTRUSO</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 10px 0;">
+                    Identificación de registro atípico + 5 Preguntas sobre calidad de datos.
+                </p>
+                <div id="piece2Container" style="display:none;" class="code-piece-badge">PIEZA 2: 47</div>
+            </div>
+
+            <!-- Módulo 3 -->
+            <div class="module-card" id="modCard3" onclick="goToChallenge(3)">
+                <span class="module-status status-ready" id="modStatus3">🔓 DISPONIBLE</span>
+                <h3 style="margin-bottom: 8px;">MÓDULO 03</h3>
+                <p style="font-weight: bold; color: var(--accent-blue);">EL INDICADOR BAJO PRESIÓN</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 10px 0;">
+                    Conteo condicional en tabla + 5 Preguntas sobre fórmulas e indicadores.
+                </p>
+                <div id="piece3Container" style="display:none;" class="code-piece-badge">PIEZA 3: 6</div>
+            </div>
+
+            <!-- Módulo 4 -->
+            <div class="module-card" id="modCard4" onclick="goToChallenge(4)">
+                <span class="module-status status-ready" id="modStatus4">🔓 DISPONIBLE</span>
+                <h3 style="margin-bottom: 8px;">MÓDULO 04</h3>
+                <p style="font-weight: bold; color: var(--accent-blue);">EL ÁREA SOSPECHOSA</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 10px 0;">
+                    Análisis visual de Dashboard + 5 Preguntas de interpretación y reportes.
+                </p>
+                <div id="piece4Container" style="display:none;" class="code-piece-badge">PIEZA 4: BODEGA</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 25px; text-align: center;" id="masterUnlockBox">
+            <h3>🔐 DESBLOQUEO DEL CÓDIGO MAESTRO</h3>
+            <p style="color: var(--text-muted); margin: 10px 0;">
+                Completa los 4 módulos para habilitar el ingreso del código final.
+            </p>
+            <button class="btn btn-secondary" id="btnGoToMaster" disabled onclick="goToScreen('screenMasterCode')">
+                INGRESAR CÓDIGO MAESTRO
+            </button>
+        </div>
+    </section>
+
+    <!-- RETO 1: MODELADO DFD -->
+    <section id="screenReto1" class="screen">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>RETO 01 — EL DFD SABOTEADO</h2>
+                <button class="btn btn-secondary" onclick="useHint(1)">💡 Pedir Pista (-50 pts)</button>
+            </div>
+            <p style="color: var(--text-muted); margin-top: 10px;">
+                <strong>FASE 1 (ACTIVIDAD INTERACTIVA):</strong> Haz clic sobre las 3 zonas con error estructural en el esquema DFD.
+                <br><strong>FASE 2 (CUESTIONARIO):</strong> Responde las 5 preguntas conceptuales de construcción DFD.
+            </p>
+            <div class="attempts-counter" id="attemptsMod1">Intentos fallidos en este módulo: 0 (-0 pts)</div>
+            <div id="hintBox1"></div>
+        </div>
+
+        <div class="dfd-container">
+            <svg width="900" height="380" viewBox="0 0 900 380" style="max-width: 100%; height: auto;">
+                <defs>
+                    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6"/>
+                    </marker>
+                </defs>
+
+                <line x1="130" y1="80" x2="250" y2="80" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow)"/>
+                <text x="190" y="70" fill="#94a3b8" font-size="11" text-anchor="middle">Reporte Novedad</text>
+
+                <line x1="310" y1="120" x2="310" y2="280" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow)"/>
+                <text x="320" y="200" fill="#94a3b8" font-size="11">Registro Evento</text>
+
+                <line x1="370" y1="300" x2="520" y2="220" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow)"/>
+                <line x1="560" y1="170" x2="560" y2="120" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow)"/>
+
+                <line x1="610" y1="80" x2="730" y2="80" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow)"/>
+                <text x="670" y="70" fill="#94a3b8" font-size="11" text-anchor="middle">Informe Kpis</text>
+
+                <!-- ERROR 1 -->
+                <g class="dfd-element" id="dfd-err1" onclick="inspectDfdElement('err1', 'Flujo Directo: Entidad ➔ Almacén')">
+                    <path d="M 70 110 L 70 300 L 250 300" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,5" fill="none" marker-end="url(#arrow)"/>
+                    <rect x="85" y="190" width="120" height="22" rx="4" fill="#0f172a" stroke="#2a364f" stroke-width="1"/>
+                    <text x="145" y="205" fill="#94a3b8" font-size="10" text-anchor="middle">Enlace Directo</text>
+                </g>
+
+                <!-- ERROR 2 -->
+                <g class="dfd-element" id="dfd-err2" onclick="inspectDfdElement('err2', 'Proceso 2.0 [Guardar datos]')">
+                    <circle cx="560" cy="200" r="42" fill="#151c2c" stroke="#3b82f6" stroke-width="2"/>
+                    <text x="560" y="195" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">2.0 Guardar</text>
+                    <text x="560" y="210" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">datos</text>
+                </g>
+
+                <!-- ERROR 3 -->
+                <g class="dfd-element" id="dfd-err3" onclick="inspectDfdElement('err3', 'Flujo Directo: Almacén ➔ Almacén')">
+                    <path d="M 520 320 L 520 360 L 680 360 L 680 320" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,5" fill="none" marker-end="url(#arrow)"/>
+                    <rect x="540" y="348" width="120" height="22" rx="4" fill="#0f172a" stroke="#2a364f" stroke-width="1"/>
+                    <text x="600" y="363" fill="#94a3b8" font-size="10" text-anchor="middle">Enlace Almacenes</text>
+                </g>
+
+                <rect x="10" y="50" width="120" height="60" rx="8" fill="#151c2c" stroke="#3b82f6" stroke-width="2"/>
+                <text x="70" y="80" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">Trabajador</text>
+
+                <circle cx="310" cy="80" r="40" fill="#151c2c" stroke="#3b82f6" stroke-width="2"/>
+                <text x="310" y="82" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">1.0 Registrar</text>
+
+                <circle cx="560" cy="80" r="40" fill="#151c2c" stroke="#3b82f6" stroke-width="2"/>
+                <text x="560" y="82" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">3.0 Generar</text>
+
+                <rect x="730" y="50" width="120" height="60" rx="8" fill="#151c2c" stroke="#3b82f6" stroke-width="2"/>
+                <text x="790" y="80" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">Gerencia</text>
+
+                <path d="M 250 280 L 370 280 M 250 320 L 370 320" stroke="#3b82f6" stroke-width="3"/>
+                <text x="310" y="305" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">D1 BD Eventos</text>
+
+                <path d="M 440 280 L 560 280 M 440 320 L 560 320" stroke="#3b82f6" stroke-width="3"/>
+                <text x="500" y="305" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">D2 BD Personal</text>
+
+                <path d="M 630 280 L 750 280 M 630 320 L 750 320" stroke="#3b82f6" stroke-width="3"/>
+                <text x="690" y="305" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">D3 Capacitación</text>
+            </svg>
+            <p style="margin-top: 10px;">Zonas corregidas en el gráfico: <span id="reto1Progress" style="font-weight: bold; color: var(--accent-yellow);">0 / 3</span></p>
+        </div>
+
+        <div class="questions-card">
+            <div class="q-title">📋 RETO 1: EL DFD SABOTEADO (CUESTIONARIO)</div>
+
+            <div class="form-group">
+                <label>1. En el DFD de un proceso de reporte de incidentes, el almacén "Archivo de incidentes cerrados" entrega directamente un resumen a la entidad externa "Gerencia", sin pasar por ningún proceso. Según las reglas de construcción de un DFD, esto representa:</label>
+                <select id="r1_q1" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">Una práctica válida, porque las entidades externas pueden recibir información tanto de procesos como de almacenes</option>
+                    <option value="B">Una violación de la regla que indica que los almacenes no pueden transmitir información directamente a una entidad externa</option>
+                    <option value="C">Una violación de la regla que exige que todo proceso tenga como mínimo una entrada y una salida</option>
+                    <option value="D">Una práctica válida, siempre que el almacén tenga también una entrada proveniente de un proceso anterior</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>2. Un estudiante presenta un diagrama que incluye un rombo con la pregunta "¿El reporte se envía por correo o en papel?", con dos flechas de salida marcadas "Sí" y "No". Esto indica principalmente que el diagrama:</label>
+                <select id="r1_q2" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">No corresponde a un DFD, porque los DFD no representan decisiones condicionales, sino únicamente el movimiento de datos</option>
+                    <option value="B">Es un DFD correctamente construido, porque muestra con claridad el flujo de la decisión operativa</option>
+                    <option value="C">Es un DFD con una entidad externa mal clasificada, ya que el rombo debería representar un almacén de datos</option>
+                    <option value="D">Es un DFD válido siempre que el rombo se sustituya por un proceso con forma de óvalo, conservando las dos salidas</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>3. ¿Cuál de las siguientes etiquetas de proceso cumple correctamente con la regla de que todo proceso debe nombrarse con una frase verbal?</label>
+                <select id="r1_q3" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">Reporte de incapacidad validado</option>
+                    <option value="B">Base de datos de incapacidades</option>
+                    <option value="C">Registro de novedades de ausentismo</option>
+                    <option value="D">Validar y registrar el reporte de incapacidad</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>4. En un DFD, el almacén "Base de datos de capacitaciones" solo aparece conectado como receptor de información desde un proceso, sin ninguna flecha de salida hacia otro proceso. Esto representa:</label>
+                <select id="r1_q4" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">Una violación de la regla que exige que todo almacén tenga como mínimo una entrada y una salida</option>
+                    <option value="B">Una situación válida si el almacén está relacionado con una tabla dimensional, ya que estas no requieren salida</option>
+                    <option value="C">Una violación de la regla que indica que las entidades externas solo pueden transmitir datos a procesos</option>
+                    <option value="D">Un almacén correctamente diseñado, ya que basta con que reciba información para cumplir su función dentro del modelo</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>5. ¿Cuál de las siguientes descripciones corresponde a un fragmento de DFD que cumple con todas las reglas de construcción?</label>
+                <select id="r1_q5" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">El almacén "Base de datos de accidentalidad" entrega directamente un reporte a la entidad "Gerencia", sin pasar por ningún proceso</option>
+                    <option value="B">El proceso "Clasificar accidente" no tiene ninguna flecha de entrada, solo una salida hacia el almacén "Registro de clasificación"</option>
+                    <option value="C">La entidad "Trabajador" envía el reporte inicial directamente al almacén "Base de datos de accidentalidad", sin pasar por un proceso</option>
+                    <option value="D">El proceso "Investigar el accidente" recibe el reporte validado desde el almacén, y entrega los hallazgos al proceso "Generar plan de acción"</option>
+                </select>
+            </div>
+
+            <button class="btn btn-success" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="validateReto1Questions()">
+                VALIDAR MÓDULO 01
+            </button>
+        </div>
+
+        <div class="nav-footer">
+            <button class="btn btn-secondary" onclick="goToScreen('screenMap')">⬅ Volver al Mapa</button>
+        </div>
+    </section>
+
+    <!-- RETO 2: DATOS ATÍPICOS -->
+    <section id="screenReto2" class="screen">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>RETO 02 — EL DATO INTRUSO</h2>
+                <button class="btn btn-secondary" onclick="useHint(2)">💡 Pedir Pista (-50 pts)</button>
+            </div>
+            <p style="color: var(--text-muted); margin-top: 10px;">
+                <strong>FASE 1 (ACTIVIDAD INTERACTIVA):</strong> Revisa la tabla de datos, identifica el registro atípico/alterado e ingresa los dos datos requeridos.
+                <br><strong>FASE 2 (CUESTIONARIO):</strong> Responde las 5 preguntas sobre calidad y limpieza de datos.
+            </p>
+            <div class="attempts-counter" id="attemptsMod2">Intentos fallidos en este módulo: 0 (-0 pts)</div>
+            <div id="hintBox2"></div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID Evento</th>
+                        <th>Área</th>
+                        <th>Tipo Evento</th>
+                        <th>Días Incapacidad</th>
+                        <th>Nivel Riesgo</th>
+                        <th>Severidad</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyReto2"></tbody>
+            </table>
+        </div>
+
+        <div class="interactive-box">
+            <h4 style="color: var(--accent-blue); margin-bottom: 12px;">🔍 ACTIVIDAD INTERACTIVA: Detección del Registro Atípico</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>ID del Registro Atípico:</label>
+                    <input type="text" id="r2_act_id" class="form-control" placeholder="Ejemplo: SST000">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Valor Atípico en 'Días Incapacidad':</label>
+                    <input type="number" id="r2_act_dias" class="form-control" placeholder="Ingresa el número">
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-card">
+            <div class="q-title">📋 RETO 2: EL DATO INTRUSO (CUESTIONARIO)</div>
+
+            <div class="form-group">
+                <label>1. En una muestra de 15 registros de días de incapacidad, el promedio es 11 y la mediana es 4. La diferencia tan marcada entre estos dos valores sugiere principalmente que:</label>
+                <select id="r2_q1" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">Existe al menos un valor extremo que está aumentando el promedio, mientras la mediana refleja mejor el valor típico del grupo</option>
+                    <option value="B">La muestra tiene muy pocos registros para calcular cualquier medida de tendencia central con confianza</option>
+                    <option value="C">La mayoría de los registros tiene valores altos, cercanos al promedio, y la mediana no refleja bien el comportamiento general</option>
+                    <option value="D">Los datos están mal ordenados en la hoja de cálculo, lo que impide que las fórmulas calculen correctamente</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>2. Al revisar la columna "Costo_estimado" de una base de accidentalidad, encuentran 4 celdas vacías de 80 registros. ¿Cuál de las siguientes es la acción más adecuada, según lo trabajado en el curso?</label>
+                <select id="r2_q2" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">Dejar las celdas vacías tal como están, porque Excel las excluye automáticamente de cualquier cálculo posterior</option>
+                    <option value="B">Eliminar las 4 filas completas de la base, ya que un registro incompleto no aporta ningún valor al análisis</option>
+                    <option value="C">Reemplazar las 4 celdas vacías por 0, para que las fórmulas de suma no generen error</option>
+                    <option value="D">Intentar recuperar el dato real desde la fuente original, y si no es posible, marcarlo explícitamente como "Sin dato"</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>3. Al construir una tabla de frecuencia de la columna "Área", aparecen cinco categorías distintas: "Bodega", "bodega", "BODEGA", "Producción" y "Mantenimiento", aunque la empresa solo tiene tres áreas reales. ¿Qué explica mejor esta situación?</label>
+                <select id="r2_q3" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">La tabla dinámica no está configurada correctamente para agrupar categorías similares de forma automática</option>
+                    <option value="B">Existen más áreas de las que inicialmente se pensaba, por lo que debe actualizarse el diccionario de datos</option>
+                    <option value="C">La columna tiene un problema de formato de fecha que está afectando también a las categorías de texto</option>
+                    <option value="D">La misma categoría fue escrita con mayúsculas y minúsculas distintas en diferentes registros, y Excel las trata como categorías separadas</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>4. En la columna "Costo_estimado_COP" de un conjunto de datos, el valor mínimo es 80.000 y el máximo es 42.000.000, mientras que la mayoría de los registros se concentra entre 80.000 y 900.000. Esta situación sugiere principalmente que:</label>
+                <select id="r2_q4" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">La columna debe eliminarse del análisis, ya que presenta una dispersión demasiado alta para ser confiable</option>
+                    <option value="B">Es necesario calcular la moda para reemplazar al rango como medida principal de dispersión</option>
+                    <option value="C">El valor máximo podría ser un caso atípico que conviene verificar antes de calcular cualquier promedio</option>
+                    <option value="D">El rango no es una medida útil en este caso, porque no permite identificar el comportamiento general del conjunto</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>5. Antes de calcular cualquier indicador sobre un conjunto de datos nuevo, el primer paso recomendado es revisar su estructura. Esto significa principalmente:</label>
+                <select id="r2_q5" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">Construir de inmediato una tabla dinámica para identificar posibles valores atípicos</option>
+                    <option value="B">Verificar el número de filas y columnas, y comparar los nombres y tipos de variable contra el diccionario de datos</option>
+                    <option value="C">Eliminar todas las filas que contengan al menos un valor vacío en cualquier columna</option>
+                    <option value="D">Calcular el promedio y la mediana de todas las variables cuantitativas disponibles</option>
+                </select>
+            </div>
+
+            <button class="btn btn-success" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="validateReto2()">
+                VALIDAR MÓDULO 02
+            </button>
+        </div>
+
+        <div class="nav-footer">
+            <button class="btn btn-secondary" onclick="goToScreen('screenMap')">⬅ Volver al Mapa</button>
+        </div>
+    </section>
+
+    <!-- RETO 3: FILTRADO E INDICADORES -->
+    <section id="screenReto3" class="screen">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>RETO 03 — EL INDICADOR BAJO PRESIÓN</h2>
+                <button class="btn btn-secondary" onclick="useHint(3)">💡 Pedir Pista (-50 pts)</button>
+            </div>
+            <p style="color: var(--text-muted); margin-top: 10px;">
+                <strong>FASE 1 (ACTIVIDAD INTERACTIVA):</strong> Aplica el criterio de filtrado sobre la tabla e ingresa el conteo numérico exacto.
+                <br><strong>FASE 2 (CUESTIONARIO):</strong> Responde las 5 preguntas sobre fórmulas e indicadores de SST.
+            </p>
+            <div class="attempts-counter" id="attemptsMod3">Intentos fallidos en este módulo: 0 (-0 pts)</div>
+            <div id="hintBox3"></div>
+        </div>
+
+        <div class="card" style="background: #0f172a; border-color: var(--accent-blue);">
+            <h4 style="color: var(--accent-blue); margin-bottom: 8px;">📋 CRITERIO DE FILTRADO Y CONTEO REQUERIDO:</h4>
+            <p style="font-family: monospace; font-size: 1rem; color: var(--accent-green);">
+                Área: "Bodega" AND Nivel_Riesgo: "Moderado" AND Días_Incapacidad: ">5"
+            </p>
+        </div>
+
+        <div class="interactive-box">
+            <h4 style="color: var(--accent-blue); margin-bottom: 12px;">📊 ACTIVIDAD INTERACTIVA: Conteo Condicional</h4>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Número exacto de registros en la tabla que cumplen SIMULTÁNEAMENTE con las 3 condiciones de filtrado:</label>
+                <input type="number" id="r3_act_count" class="form-control" placeholder="Ingresa la cifra contada">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Área</th>
+                        <th>Tipo Evento</th>
+                        <th>Nivel Riesgo</th>
+                        <th>Días Incapacidad</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyReto3"></tbody>
+            </table>
+        </div>
+
+        <div class="questions-card">
+            <div class="q-title">📋 RETO 3: EL INDICADOR BAJO PRESIÓN (CUESTIONARIO)</div>
+
+            <div class="form-group">
+                <label>1. Se necesita contar cuántos accidentes fueron clasificados como "Grave" Y ocurrieron en el área de "Producción" durante el último trimestre. ¿Cuál función permite resolver esto en una sola fórmula?</label>
+                <select id="r3_q1" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">CONTAR.SI, aplicada dos veces y sumando los resultados obtenidos</option>
+                    <option value="B">CONTAR.SI.CONJUNTO, combinando los tres criterios dentro de una misma fórmula</option>
+                    <option value="C">SUMAR.SI.CONJUNTO, utilizando la columna de gravedad como rango de suma</option>
+                    <option value="D">BUSCARX, estableciendo el área y la gravedad como criterios de búsqueda combinados</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>2. En una tabla dimensional, la columna "Nombre del área" está ubicada a la izquierda de la columna "Código de área". Si se necesita traer el nombre del área a partir del código, ¿qué situación describe correctamente lo que ocurre con cada función?</label>
+                <select id="r3_q2" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">BUSCARV puede resolverlo sin inconvenientes, siempre que se use el argumento de coincidencia aproximada</option>
+                    <option value="B">Ninguna de las dos funciones puede resolver esta búsqueda, porque el orden de las columnas no puede modificarse</option>
+                    <option value="C">BUSCARV no puede resolverlo directamente, porque busca hacia la derecha, mientras que BUSCARX sí puede hacerlo sin reorganizar la tabla</option>
+                    <option value="D">BUSCARX requiere que la tabla esté ordenada alfabéticamente para poder ubicar el valor correcto</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>3. Un estudiante calcula la proporción de accidentes de trabajo mortales ocurridos durante el año, según lo establecido en la Resolución 0312 de 2019. Este indicador se clasifica como:</label>
+                <select id="r3_q3" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">Un indicador de Estructura, porque depende de los recursos disponibles para la atención de emergencias</option>
+                    <option value="B">Un indicador de Proceso, porque mide la ejecución de las actividades de investigación de accidentes</option>
+                    <option value="C">Un indicador de Resultado, porque mide el impacto final de la gestión de SST sobre los trabajadores</option>
+                    <option value="D">Un indicador que no requiere clasificación, ya que la Resolución 0312 no distingue entre tipos de indicadores</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>4. El Índice de Severidad calculated para un periodo es de 230, y la meta definida por la empresa es de 200 o menos. ¿Qué interpretación es la más adecuada?</label>
+                <select id="r3_q4" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">El indicador está dentro de un rango aceptable, ya que la diferencia frente a la meta es mínima y no amerita revisión</option>
+                    <option value="B">El indicador no puede interpretarse sin conocer primero el Índice de Frecuencia del mismo periodo</option>
+                    <option value="C">El resultado indica que el número de accidentes graves aumentó respecto al periodo anterior</option>
+                    <option value="D">El indicador supera la meta establecida, lo que indica que se perdieron más días por accidente de los esperados para ese nivel de horas-hombre trabajadas</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>5. Se requiere sumar los días de incapacidad únicamente del área de Bodega, correspondientes a fechas posteriores al 1 de julio. ¿Cuál fórmula resuelve correctamente esta necesidad?</label>
+                <select id="r3_q5" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">=SUMAR.SI.CONJUNTO(Días_incapacidad, Área,"Bodega", Fecha,">01/07/2026")</option>
+                    <option value="B">=CONTAR.SI.CONJUNTO(Área,"Bodega", Fecha,">01/07/2026")</option>
+                    <option value="C">=SUMAR.SI(Días_incapacidad, Área,"Bodega")</option>
+                    <option value="D">=BUSCARX(Área,"Bodega", Días_incapacidad)</option>
+                </select>
+            </div>
+
+            <button class="btn btn-success" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="validateReto3()">
+                VALIDAR MÓDULO 03
+            </button>
+        </div>
+
+        <div class="nav-footer">
+            <button class="btn btn-secondary" onclick="goToScreen('screenMap')">⬅ Volver al Mapa</button>
+        </div>
+    </section>
+
+    <!-- RETO 4: INTERPRETACIÓN DE DASHBOARD -->
+    <section id="screenReto4" class="screen">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>RETO 04 — EL ÁREA SOSPECHOSA</h2>
+                <button class="btn btn-secondary" onclick="useHint(4)">💡 Pedir Pista (-50 pts)</button>
+            </div>
+            <p style="color: var(--text-muted); margin-top: 10px;">
+                <strong>FASE 1 (ACTIVIDAD INTERACTIVA):</strong> Examina el Dashboard, identifica el área con mayor acumulación de eventos y su cifra exacta.
+                <br><strong>FASE 2 (CUESTIONARIO):</strong> Responde las 5 preguntas de análisis e interpretación gerencial.
+            </p>
+            <div class="attempts-counter" id="attemptsMod4">Intentos fallidos en este módulo: 0 (-0 pts)</div>
+            <div id="hintBox4"></div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <div class="stat-label">Total Eventos</div>
+                    <div class="kpi-value">48</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="stat-label">Accidentes</div>
+                    <div class="kpi-value">21</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="stat-label">Incidentes</div>
+                    <div class="kpi-value">27</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="stat-label">Días Incapacidad</div>
+                    <div class="kpi-value">86</div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h4 style="margin-bottom: 10px; color: var(--accent-blue);">Eventos por Área de Trabajo</h4>
+                <svg width="100%" height="180" viewBox="0 0 300 180">
+                    <rect x="20" y="30" width="140" height="18" fill="#3b82f6" rx="3"/>
+                    <text x="170" y="44" fill="#fff" font-size="12">Producción (10)</text>
+
+                    <rect x="20" y="60" width="220" height="18" fill="#3b82f6" rx="3"/>
+                    <text x="250" y="74" fill="#fff" font-size="12">Bodega (18)</text>
+
+                    <rect x="20" y="90" width="100" height="18" fill="#3b82f6" rx="3"/>
+                    <text x="130" y="104" fill="#fff" font-size="12">Logística (7)</text>
+
+                    <rect x="20" y="120" width="85" height="18" fill="#3b82f6" rx="3"/>
+                    <text x="115" y="134" fill="#fff" font-size="12">Mantenimiento (6)</text>
+
+                    <rect x="20" y="150" width="50" height="18" fill="#3b82f6" rx="3"/>
+                    <text x="80" y="164" fill="#fff" font-size="12">Otros (7)</text>
+                </svg>
+            </div>
+
+            <div class="chart-card">
+                <h4 style="margin-bottom: 10px; color: var(--accent-blue);">Días de Incapacidad Acumulados</h4>
+                <svg width="100%" height="180" viewBox="0 0 300 180">
+                    <circle cx="90" cy="90" r="65" fill="none" stroke="#1e293b" stroke-width="20"/>
+                    <circle cx="90" cy="90" r="65" fill="none" stroke="#3b82f6" stroke-width="20" stroke-dasharray="210 400" rotate="-90"/>
+                    <text x="180" y="70" fill="#f1f5f9" font-size="12">■ Bodega: 42 días</text>
+                    <text x="180" y="95" fill="#94a3b8" font-size="12">■ Producción: 24 días</text>
+                    <text x="180" y="120" fill="#64748b" font-size="12">■ Otras Áreas: 20 días</text>
+                </svg>
+            </div>
+        </div>
+
+        <div class="interactive-box">
+            <h4 style="color: var(--accent-blue); margin-bottom: 12px;">📊 ACTIVIDAD INTERACTIVA: Lectura del Dashboard</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Área con mayor cantidad de eventos:</label>
+                    <input type="text" id="r4_act_area" class="form-control" placeholder="Escribe el nombre del área">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Total de eventos en dicha área:</label>
+                    <input type="number" id="r4_act_cant" class="form-control" placeholder="Ingresa la cifra">
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-card">
+            <div class="q-title">📋 RETO 4: EL ÁREA SOSPECHOSA (CUESTIONARIO)</div>
+
+            <div class="form-group">
+                <label>1. Un estudiante escribe en su Reporte Ejecutivo: "El área de Bodega tuvo 17 accidentes y el área de Logística tuvo 9". Esta afirmación corresponde principalmente a:</label>
+                <select id="r4_q1" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">Un insight, porque compara el desempeño de dos áreas distintas dentro de la misma empresa</option>
+                    <option value="B">Una información, porque ya presenta los datos organizados y comparados, pero sin explicar la causa ni sugerir una acción</option>
+                    <option value="C">Un dato, porque describe un hecho aislado sin ningún tipo de comparación ni contexto</option>
+                    <option value="D">Una conclusión analítica, porque permite tomar una decisión inmediata sobre ambas áreas</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>2. Los indicadores generales de una empresa (IF e IS) están dentro de la meta. Sin embargo, al revisar el detalle por área, se encuentra que el 80% de los casos graves se concentra en un área específica. ¿Qué conclusión es más adecuada frente a esta situación?</label>
+                <select id="r4_q2" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">Un indicador general dentro de meta puede ocultar una concentración de riesgo importante en una categoría específica</option>
+                    <option value="B">Los indicadores generales son suficientes para evaluar la gestión de SST, por lo que no es necesario revisar el detalle por área</option>
+                    <option value="C">El resultado general en meta demuestra que no existen problemas reales de severidad en ninguna área de la empresa</option>
+                    <option value="D">La concentración de casos graves en un área no tiene relación con el resultado general de los indicadores de la empresa</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>3. En el gráfico de "Casos por gravedad" de un Reporte Ejecutivo, la categoría "Leve" ocupa la porción más grande, seguida de "Moderado", y "Grave" representa la porción más pequeña. ¿Qué afirmación interpreta correctamente esta distribución, sin ir más allá de lo que el gráfico muestra?</label>
+                <select id="r4_q3" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">La mayoría de los eventos registrados corresponden a una gravedad baja, mientras que los casos graves son proporcionalmente los menos frecuentes</option>
+                    <option value="B">La empresa tiene una gestión de riesgos deficiente, ya que deberían existir más casos leves que moderados</option>
+                    <option value="C">El número de casos graves es tan bajo que no amerita ningún tipo de seguimiento adicional</option>
+                    <option value="D">La distribución indica que los accidentes graves ocurren únicamente en áreas administrativas</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>4. En el modelo de datos que alimenta un Reporte Ejecutivo, el nombre completo de cada área se guarda una sola vez en una tabla dimensional, y la tabla de hechos solo referencia un código corto. ¿Cuál es el beneficio principal de esta forma de organizar la información para el análisis final?</label>
+                <select id="r4_q4" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">Reduce el tamaño del archivo de Excel, lo cual es el principal objetivo de normalizar una tabla</option>
+                    <option value="B">Evita que el nombre del área se escriba de forma distinta en cada registro, lo que garantiza que los conteos por categoría sean precisos</option>
+                    <option value="C">Permite aplicar fórmulas de búsqueda sin necesidad de definir ningún criterio adicional</option>
+                    <option value="D">Permite que los gráficos del Reporte Ejecutivo se actualicen con mayor velocidad que si se usara una sola tabla</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>5. Un estudiante identifica que un área administrativa, normalmente considerada de bajo riesgo, concentra una proporción alta de los días de incapacidad del periodo. ¿Cuál sería la acción más coherente con este hallazgo, según el enfoque de análisis trabajado en el curso?</label>
+                <select id="r4_q5" class="form-control">
+                    <option value="">-- Selecciona respuesta --</option>
+                    <option value="A">Reducir la meta del Índice de Severidad general de la empresa, para que el resultado refleje mejor esta situación</option>
+                    <option value="B">Excluir los registros de esa área del cálculo de los indicadores generales, para no afectar el resultado del periodo</option>
+                    <option value="C">Investigar específicamente los peligros presentes en esa área, en lugar de asumir que el riesgo se concentra solo en áreas operativas</option>
+                    <option value="D">Ignorar el hallazgo, ya que las áreas administrativas no suelen estar asociadas a riesgos laborales relevantes</option>
+                </select>
+            </div>
+
+            <button class="btn btn-success" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="validateReto4()">
+                VALIDAR MÓDULO 04
+            </button>
+        </div>
+
+        <div class="nav-footer">
+            <button class="btn btn-secondary" onclick="goToScreen('screenMap')">⬅ Volver al Mapa</button>
+        </div>
+    </section>
+
+    <!-- PANTALLA: CÓDIGO MAESTRO -->
+    <section id="screenMasterCode" class="screen">
+        <div class="card" style="text-align: center; max-width: 650px; margin: 0 auto;">
+            <h2 style="color: var(--accent-blue); margin-bottom: 10px;">🔐 DESBLOQUEO FINAL DEL SISTEMA SST</h2>
+            <p style="color: var(--text-muted); margin-bottom: 15px;">
+                Ingresa el código en orden (solo escribe los valores continuos, los guiones <code>-</code> se colocan automáticamente):
+            </p>
+
+            <div class="keypad-container">
+                <div class="code-input-display" id="masterCodeDisplay">_ - _ - _ - _</div>
+                
+                <div class="form-group">
+                    <label for="masterInput" style="text-align: center; display: block; color: var(--accent-yellow); font-weight: bold;">
+                        Escribe aquí los valores seguidos (Ejemplo ilustrativo: 1234CLAVE)
+                    </label>
+                    <input type="text" id="masterInput" class="form-control" 
+                           style="text-align: center; font-size: 1.3rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;" 
+                           placeholder="Ingresa los valores seguidos" 
+                           oninput="handleMasterCodeInput(this)">
+                </div>
+
+                <button class="btn btn-success" style="width: 100%; margin-top: 15px; justify-content: center; font-size: 1.1rem; padding: 15px;" onclick="validateMasterCode()">
+                    🔓 DESBLOQUEAR SISTEMA
+                </button>
+            </div>
+        </div>
+        <div class="nav-footer" style="justify-content: center;">
+            <button class="btn btn-secondary" onclick="goToScreen('screenMap')">⬅ Volver al Mapa</button>
+        </div>
+    </section>
+
+    <!-- PANTALLA: VICTORIA ESTUDIANTE -->
+    <section id="screenVictory" class="screen">
+        <div class="card" style="text-align: center; border-color: var(--accent-green); background: linear-gradient(180deg, rgba(16, 185, 129, 0.1) 0%, var(--card-bg) 100%);">
+            <h1 style="font-size: 2.5rem; color: var(--accent-green); margin-bottom: 10px;">🎉 ¡ACTIVIDAD FINALIZADA!</h1>
+            <h3 style="color: var(--text-main);">HASTA AQUÍ LLEGA TU MISIÓN DE ANÁLISIS DE DATOS</h3>
+            <p style="color: var(--text-muted); margin-top: 15px; font-size: 1.05rem;">
+                Tus resultados, tiempo y puntaje han quedado registrados exitosamente en el sistema local para el docente.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3 style="color: var(--accent-blue); margin-bottom: 15px;">📊 RESUMEN DE TU EQUIPO</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; text-align: center;">
+                <div class="stat-box">
+                    <div class="stat-label">Equipo</div>
+                    <div style="font-weight: bold; font-size: 1.1rem;" id="resTeam">-</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Puntaje Final</div>
+                    <div style="font-weight: bold; font-size: 1.3rem; color: var(--accent-green);" id="resScore">- / 1000</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Tiempo Empleado</div>
+                    <div style="font-weight: bold; font-size: 1.1rem;" id="resTime">-</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Intentos Fallidos Totales</div>
+                    <div style="font-weight: bold; font-size: 1.1rem; color: var(--accent-red);" id="resAttempts">-</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <label style="font-size: 0.85rem; color: var(--text-muted); font-weight: bold;">🔑 CLAVE HASH REGISTRADA EN EL SISTEMA:</label>
+                <div class="hash-box" id="hashDisplay">GENERANDO_HASH...</div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Notifica a tu docente que tu equipo ha finalizado la actividad.</p>
+        </div>
+    </section>
+
+    <!-- PANTALLA: DERROTA -->
+    <section id="screenDefeat" class="screen">
+        <div class="card" style="text-align: center; border-color: var(--accent-red); background: linear-gradient(180deg, rgba(239, 68, 68, 0.1) 0%, var(--card-bg) 100%);">
+            <h1 style="font-size: 2.5rem; color: var(--accent-red); margin-bottom: 10px;">⏰ TIEMPO AGOTADO (45 MIN)</h1>
+            <h3>SE HAN AGOTADO LOS 45 MINUTOS DE LA AUDITORÍA</h3>
+            <p style="color: var(--text-muted); margin-top: 10px;">Comunica a tu docente la finalización por tiempo.</p>
+        </div>
+    </section>
+
+</div>
+
+<!-- MODAL INSPECCIÓN DFD -->
+<div class="modal-overlay" id="dfdModal">
+    <div class="modal-body">
+        <h3 style="color: var(--accent-blue); margin-bottom: 10px;" id="dfdModalTitle">Inspección de Elemento</h3>
+        <p style="margin-bottom: 15px; color: var(--text-muted);">Selecciona la justificación del error identificado:</p>
+        <div id="dfdOptionsContainer"></div>
+        <button class="btn btn-secondary" style="width: 100%; margin-top: 15px;" onclick="closeDfdModal()">Cancelar</button>
+    </div>
+</div>
+
+<!-- MODAL DOCENTE / ADMINISTRADOR (CLAVE: Kira.2029) -->
+<div class="modal-overlay" id="instructorModal">
+    <div class="modal-body" style="max-width: 750px; max-height: 85vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3>🔑 PANEL DOCENTE Y CONTROL CONSOLIDADO</h3>
+            <button class="btn btn-secondary" onclick="closeInstructorModal()">✕</button>
+        </div>
+
+        <div id="instructorAuth">
+            <p style="margin-bottom: 10px;">Ingresa la contraseña docente autorizada:</p>
+            <input type="password" id="instructorPass" class="form-control" placeholder="Contraseña Docente">
+            <button class="btn btn-blue" style="width: 100%; margin-top: 10px;" onclick="checkInstructorPass()">Acceder al Panel</button>
+        </div>
+
+        <div id="instructorContent" style="display: none;">
+            <div class="instructor-badge">ACCESO PERMITIDO - MODO DOCENTE</div>
+            
+            <h4 style="margin-top: 20px; color: var(--accent-blue);">📊 DESCARGA DE REPORTES CONSOLIDADOS:</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
+                Descarga un único archivo Excel (.xlsx) que reúne los resultados acumulados de todos los equipos que han realizado el juego en este dispositivo.
+            </p>
+
+            <button class="btn btn-success" style="width: 100%; justify-content: center; margin-bottom: 20px;" onclick="downloadConsolidatedExcel()">
+                📊 DESCARGAR UN SOLO EXCEL CON TODOS LOS RESULTADOS (.XLSX)
+            </button>
+
+            <h4 style="color: var(--accent-red); margin-top: 15px;">🔄 CONTROL DE REINICIO GENERAL:</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
+                Reinicia la aplicación y borra el historial de equipos guardados para iniciar una nueva sesión de clase.
+            </p>
+            <button class="btn btn-danger" style="width: 100%; justify-content: center;" onclick="resetAllData()">
+                🗑️ REINICIAR TODO Y BORRAR HISTORIAL DE CLASE
+            </button>
+
+            <h4 style="margin-top: 20px; color: var(--accent-blue);">🔑 SOLUCIONARIO Y CLAVE MAESTRA:</h4>
+            <ul style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); margin-left: 20px;">
+                <li>Reto 1 (DFD): DFD = <code>3 errores corregidos</code> | Cuestionario = <code>1:B, 2:A, 3:D, 4:A, 5:D</code> | Pieza = <code>7</code></li>
+                <li>Reto 2 (Outliers): ID = <code>SST011</code>, Días = <code>47</code> | Cuestionario = <code>1:A, 2:D, 3:D, 4:C, 5:B</code> | Pieza = <code>47</code></li>
+                <li>Reto 3 (Indicadores): Conteo = <code>6</code> | Cuestionario = <code>1:B, 2:C, 3:C, 4:D, 5:A</code> | Pieza = <code>6</code></li>
+                <li>Reto 4 (Dashboard): Área = <code>BODEGA</code>, Eventos = <code>18</code> | Cuestionario = <code>1:B, 2:A, 3:A, 4:B, 5:C</code> | Pieza = <code>BODEGA</code></li>
+                <li><strong>CÓDIGO MAESTRO COMPLETO:</strong> <code style="color: var(--accent-green); font-size: 1.1rem;">7 - 47 - 6 - BODEGA</code></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    let gameState = {
+        teamName: '',
+        teamMembers: '',
+        score: 1000,
+        timeRemaining: 45 * 60, // 45 MINUTOS
+        timerInterval: null,
+        soundEnabled: true,
+        completedModules: [false, false, false, false],
+        codePieces: ['', '', '', ''],
+        hintsUsed: [0, 0, 0, 0],
+        moduleAttempts: [0, 0, 0, 0],
+        dfdErrorsSolved: { err1: false, err2: false, err3: false },
+        verificationHash: ''
+    };
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+        if (!gameState.soundEnabled) return;
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'success') {
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        } catch(e) {}
+    }
+
+    function toggleAudio() {
+        gameState.soundEnabled = !gameState.soundEnabled;
+        document.getElementById('audioBtn').innerText = gameState.soundEnabled ? '🔊 Audio' : '🔇 Audio';
+    }
+
+    function goToScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function startMission(e) {
+        e.preventDefault();
+        gameState.teamName = document.getElementById('teamName').value;
+        gameState.teamMembers = document.getElementById('teamMembers').value;
+
+        document.getElementById('globalHeader').style.display = 'flex';
+        initReto2Data();
+        initReto3Data();
+        startTimer();
+
+        goToScreen('screenMap');
+        playSound('success');
+    }
+
+    function startTimer() {
+        gameState.timerInterval = setInterval(() => {
+            gameState.timeRemaining--;
+            updateTimerDisplay();
+
+            if (gameState.timeRemaining <= 0) {
+                clearInterval(gameState.timerInterval);
+                saveTeamResults('TIEMPO AGOTADO');
+                goToScreen('screenDefeat');
+                playSound('error');
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const mins = Math.floor(gameState.timeRemaining / 60);
+        const secs = gameState.timeRemaining % 60;
+        const display = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        const el = document.getElementById('timerDisplay');
+        el.innerText = display;
+
+        if (mins <= 5) el.className = 'stat-value timer-critical';
+        else if (mins <= 10) el.className = 'stat-value timer-warning';
+    }
+
+    function updateScore(change) {
+        gameState.score = Math.max(0, gameState.score + change);
+        document.getElementById('scoreDisplay').innerText = gameState.score.toString().padStart(4, '0');
+    }
+
+    function recordFailedAttempt(modIndex, ptsDeduction = 30) {
+        gameState.moduleAttempts[modIndex]++;
+        updateScore(-ptsDeduction);
+        const attemptsEl = document.getElementById(`attemptsMod${modIndex + 1}`);
+        if (attemptsEl) {
+            attemptsEl.innerText = `Intentos fallidos en este módulo: ${gameState.moduleAttempts[modIndex]} (-${gameState.moduleAttempts[modIndex] * ptsDeduction} pts)`;
+        }
+    }
+
+    const hintsData = {
+        1: ["Pista 1: En DFD, los almacenes requieren un proceso intermedio y no representan lógica condicional.", "Pista 2: Revisa que las etiquetas usen verbos infinitivos como 'Validar'."],
+        2: ["Pista 1: La mediana es inmune a outliers. El registro atípico es SST011 con 47 días.", "Pista 2: La mejor práctica ante celdas vacías es buscar el dato original o marcar 'Sin dato'."],
+        3: ["Pista 1: Aplica el filtro: Bodega, Moderado y Días > 5. El conteo es 6.", "Pista 2: CONTAR.SI.CONJUNTO evalúa múltiples criterios. BUSCARX permite búsquedas hacia la izquierda."],
+        4: ["Pista 1: El área crítica en el gráfico de barras es Bodega con 18 eventos.", "Pista 2: Una afirmación descriptiva comparativa es 'Información'. Promedios en meta pueden ocultar picos de riesgo."]
+    };
+
+    function useHint(retoNum) {
+        const used = gameState.hintsUsed[retoNum - 1];
+        if (used >= 2) {
+            alert("Ya utilizaste las 2 pistas de este módulo.");
+            return;
+        }
+
+        const hintText = hintsData[retoNum][used];
+        gameState.hintsUsed[retoNum - 1]++;
+        updateScore(-50);
+
+        const box = document.getElementById(`hintBox${retoNum}`);
+        box.innerHTML += `<div class="hint-box">${hintText} (-50 pts)</div>`;
+        playSound('success');
+    }
+
+    function goToChallenge(num) {
+        goToScreen(`screenReto${num}`);
+    }
+
+    /* RETO 1 */
+    function inspectDfdElement(errKey, title) {
+        if (gameState.dfdErrorsSolved[errKey]) return;
+
+        document.getElementById('dfdModalTitle').innerText = title;
+        const container = document.getElementById('dfdOptionsContainer');
+        container.innerHTML = '';
+
+        let options = [];
+        if (errKey === 'err1') {
+            options = [
+                { text: "Una entidad externa no puede guardar ni leer datos directamente de un almacén sin un proceso", correct: true },
+                { text: "Las entidades externas requieren un protocolo especial de conexión de red", correct: false },
+                { text: "Los almacenes de datos no aceptan conexiones provenientes del área operativa", correct: false },
+                { text: "El flujo de datos debe representarse con color amarillo en lugar de azul", correct: false }
+            ];
+        } else if (errKey === 'err2') {
+            options = [
+                { text: "Falta un icono decorativo que identifique el tipo de pantalla utilizada", correct: false },
+                { text: "Nombre ambiguo; un proceso debe nombrarse con una frase verbal (ej: Validar y Registrar Evento)", correct: true },
+                { text: "Los procesos circulares deben posicionarse únicamente a la izquierda", correct: false },
+                { text: "Un proceso no puede recibir datos de un formulario de registro", correct: false }
+            ];
+        } else if (errKey === 'err3') {
+            options = [
+                { text: "El ancho de la línea de conexión es inferior al estándar exigido", correct: false },
+                { text: "Dos almacenes no intercambian datos directamente sin un proceso intermedio que los transforme", correct: true },
+                { text: "Los almacenes de datos deben guardar la misma cantidad exacta de registros", correct: false },
+                { text: "No es posible vincular más de dos bases de datos en un mismo esquema", correct: false }
+            ];
+        }
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt.text;
+            btn.onclick = () => solveDfdError(errKey, opt.correct);
+            container.appendChild(btn);
+        });
+
+        document.getElementById('dfdModal').classList.add('active');
+    }
+
+    function closeDfdModal() { document.getElementById('dfdModal').classList.remove('active'); }
+
+    function solveDfdError(errKey, isCorrect) {
+        closeDfdModal();
+        if (isCorrect) {
+            gameState.dfdErrorsSolved[errKey] = true;
+            document.getElementById(`dfd-${errKey}`).classList.add('solved');
+            playSound('success');
+
+            const count = Object.values(gameState.dfdErrorsSolved).filter(Boolean).length;
+            document.getElementById('reto1Progress').innerText = `${count} / 3`;
+        } else {
+            recordFailedAttempt(0, 20);
+            playSound('error');
+            alert("❌ Selección incorrecta (-20 pts). Revisa el concepto de construcción DFD.");
+        }
+    }
+
+    function validateReto1Questions() {
+        const count = Object.values(gameState.dfdErrorsSolved).filter(Boolean).length;
+        if (count < 3) {
+            alert("⚠️ Identifica y corrige primero las 3 zonas con error en el gráfico DFD de la Fase 1.");
+            return;
+        }
+
+        const q1 = document.getElementById('r1_q1').value;
+        const q2 = document.getElementById('r1_q2').value;
+        const q3 = document.getElementById('r1_q3').value;
+        const q4 = document.getElementById('r1_q4').value;
+        const q5 = document.getElementById('r1_q5').value;
+
+        if (q1 === 'B' && q2 === 'A' && q3 === 'D' && q4 === 'A' && q5 === 'D') {
+            playSound('success');
+            unlockModule(1, '7');
+        } else {
+            recordFailedAttempt(0, 30);
+            playSound('error');
+            alert("❌ Una o más respuestas del cuestionario son incorrectas. Revisa tus elecciones e intenta nuevamente.");
+        }
+    }
+
+    /* RETO 2 */
+    function initReto2Data() {
+        const tbody = document.getElementById('tbodyReto2');
+        tbody.innerHTML = '';
+        const data = [
+            { id: 'SST001', area: 'Bodega', evento: 'Accidente', dias: 2, riesgo: 'Moderado', sev: 'Leve' },
+            { id: 'SST002', area: 'Producción', evento: 'Accidente', dias: 4, riesgo: 'Alto', sev: 'Moderada' },
+            { id: 'SST003', area: 'Logística', evento: 'Incidente', dias: 0, riesgo: 'Bajo', sev: 'Leve' },
+            { id: 'SST004', area: 'Bodega', evento: 'Accidente', dias: 3, riesgo: 'Alto', sev: 'Moderada' },
+            { id: 'SST005', area: 'Producción', evento: 'Incidente', dias: 0, riesgo: 'Moderado', sev: 'Leve' },
+            { id: 'SST011', area: 'Bodega', evento: 'Accidente', dias: 47, riesgo: 'Moderado', sev: 'Leve' },
+            { id: 'SST012', area: 'Logística', evento: 'Accidente', dias: 3, riesgo: 'Moderado', sev: 'Leve' }
+        ];
+        data.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><strong>${item.id}</strong></td><td>${item.area}</td><td>${item.evento}</td><td>${item.dias}</td><td>${item.riesgo}</td><td>${item.sev}</td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function validateReto2() {
+        const actId = document.getElementById('r2_act_id').value.trim().toUpperCase();
+        const actDias = parseInt(document.getElementById('r2_act_dias').value);
+
+        if (actId !== 'SST011' || actDias !== 47) {
+            recordFailedAttempt(1, 20);
+            playSound('error');
+            alert("❌ Comprueba los datos del hallazgo interactivo (ID del registro y días de incapacidad atípicos).");
+            return;
+        }
+
+        const q1 = document.getElementById('r2_q1').value;
+        const q2 = document.getElementById('r2_q2').value;
+        const q3 = document.getElementById('r2_q3').value;
+        const q4 = document.getElementById('r2_q4').value;
+        const q5 = document.getElementById('r2_q5').value;
+
+        if (q1 === 'A' && q2 === 'D' && q3 === 'D' && q4 === 'C' && q5 === 'B') {
+            playSound('success');
+            unlockModule(2, '47');
+        } else {
+            recordFailedAttempt(1, 30);
+            playSound('error');
+            alert("❌ Una o más respuestas del cuestionario son incorrectas. Examina los conceptos e intenta de nuevo.");
+        }
+    }
+
+    /* RETO 3 */
+    function initReto3Data() {
+        const tbody = document.getElementById('tbodyReto3');
+        tbody.innerHTML = '';
+        for (let i = 1; i <= 25; i++) {
+            let area = (i % 2 === 0) ? 'Bodega' : 'Producción';
+            let riesgo = (i % 3 === 0) ? 'Moderado' : 'Bajo';
+            let dias = (i % 4 === 0) ? 8 : 2;
+            if ([3, 7, 11, 15, 19, 23].includes(i)) {
+                area = 'Bodega'; riesgo = 'Moderado'; dias = 7;
+            }
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>REG-${100+i}</td><td>${area}</td><td>Accidente</td><td>${riesgo}</td><td>${dias}</td>`;
+            tbody.appendChild(tr);
+        }
+    }
+
+    function validateReto3() {
+        const actCount = parseInt(document.getElementById('r3_act_count').value);
+
+        if (actCount !== 6) {
+            recordFailedAttempt(2, 20);
+            playSound('error');
+            alert("❌ La cifra ingresada en el conteo condicional es incorrecta. Vuelve a filtrar la tabla con las 3 condiciones.");
+            return;
+        }
+
+        const q1 = document.getElementById('r3_q1').value;
+        const q2 = document.getElementById('r3_q2').value;
+        const q3 = document.getElementById('r3_q3').value;
+        const q4 = document.getElementById('r3_q4').value;
+        const q5 = document.getElementById('r3_q5').value;
+
+        if (q1 === 'B' && q2 === 'C' && q3 === 'C' && q4 === 'D' && q5 === 'A') {
+            playSound('success');
+            unlockModule(3, '6');
+        } else {
+            recordFailedAttempt(2, 30);
+            playSound('error');
+            alert("❌ Una o más respuestas del cuestionario son incorrectas. Verifica la sintaxis e interpretación de indicadores.");
+        }
+    }
+
+    /* RETO 4 */
+    function validateReto4() {
+        const actArea = document.getElementById('r4_act_area').value.trim().toUpperCase();
+        const actCant = parseInt(document.getElementById('r4_act_cant').value);
+
+        if (!actArea.includes('BODEGA') || actCant !== 18) {
+            recordFailedAttempt(3, 20);
+            playSound('error');
+            alert("❌ Revisa los datos extraídos del Dashboard (Área con mayor eventos y su cantidad exacta).");
+            return;
+        }
+
+        const q1 = document.getElementById('r4_q1').value;
+        const q2 = document.getElementById('r4_q2').value;
+        const q3 = document.getElementById('r4_q3').value;
+        const q4 = document.getElementById('r4_q4').value;
+        const q5 = document.getElementById('r4_q5').value;
+
+        if (q1 === 'B' && q2 === 'A' && q3 === 'A' && q4 === 'B' && q5 === 'C') {
+            playSound('success');
+            unlockModule(4, 'BODEGA');
+        } else {
+            recordFailedAttempt(3, 30);
+            playSound('error');
+            alert("❌ Respuestas del cuestionario incorrectas. Revisa la diferencia entre dato e información y las acciones recomendadas.");
+        }
+    }
+
+    function unlockModule(modNum, codePiece) {
+        gameState.completedModules[modNum - 1] = true;
+        gameState.codePieces[modNum - 1] = codePiece;
+
+        const card = document.getElementById(`modCard${modNum}`);
+        card.classList.add('unlocked');
+
+        const status = document.getElementById(`modStatus${modNum}`);
+        status.className = 'module-status status-unlocked';
+        status.innerText = '🔓 COMPLETADO';
+
+        document.getElementById(`piece${modNum}Container`).style.display = 'block';
+
+        if (gameState.completedModules.every(Boolean)) {
+            document.getElementById('btnGoToMaster').disabled = false;
+            document.getElementById('btnGoToMaster').className = 'btn btn-success';
+        }
+
+        alert(`🔓 ¡MÓDULO 0${modNum} RESUELTO!
+Pieza del Código Obtenida: ${codePiece}`);
+        goToScreen('screenMap');
+    }
+
+    /* MANEJO AUTOMÁTICO DE MÁSCARA DEL CÓDIGO MAESTRO */
+    function handleMasterCodeInput(inputEl) {
+        let raw = inputEl.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        let formatted = raw;
+
+        if (raw.length > 0) {
+            let part1 = raw.substring(0, 1);
+            let part2 = raw.substring(1, 3);
+            let part3 = raw.substring(3, 4);
+            let part4 = raw.substring(4);
+
+            let parts = [];
+            if (part1) parts.push(part1);
+            if (part2) parts.push(part2);
+            if (part3) parts.push(part3);
+            if (part4) parts.push(part4);
+
+            formatted = parts.join(' - ');
+        }
+
+        document.getElementById('masterCodeDisplay').innerText = formatted || "_ - _ - _ - _";
+    }
+
+    function generateVerificationHash(team, score, elapsedSecs, attempts) {
+        const str = `${team}_SST2026_${score}_TIME${elapsedSecs}_ATTEMPTS${attempts}_SECRET_KIRA_2029`;
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash |= 0;
+        }
+        return `SST-HASH-${Math.abs(hash).toString(16).toUpperCase().padStart(8, '0')}-${score}`;
+    }
+
+    function validateMasterCode() {
+        const inputEl = document.getElementById('masterInput');
+        const raw = inputEl.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        
+        if (raw === "7476BODEGA") {
+            clearInterval(gameState.timerInterval);
+            playSound('success');
+
+            document.getElementById('resTeam').innerText = gameState.teamName;
+            document.getElementById('resScore').innerText = `${gameState.score} / 1000`;
+
+            const elapsedSecs = (45 * 60) - gameState.timeRemaining;
+            const mins = Math.floor(elapsedSecs / 60);
+            const secs = elapsedSecs % 60;
+            document.getElementById('resTime').innerText = `${mins}m ${secs}s`;
+
+            const totalAttempts = gameState.moduleAttempts.reduce((a, b) => a + b, 0);
+            document.getElementById('resAttempts').innerText = totalAttempts;
+
+            gameState.verificationHash = generateVerificationHash(gameState.teamName, gameState.score, elapsedSecs, totalAttempts);
+            document.getElementById('hashDisplay').innerText = gameState.verificationHash;
+
+            saveTeamResults('MISIÓN CUMPLIDA');
+
+            goToScreen('screenVictory');
+        } else {
+            updateScore(-50);
+            playSound('error');
+            alert("❌ CÓDIGO MAESTRO INCORRECTO. Verifica las piezas obtenidas en cada módulo.");
+        }
+    }
+
+    function saveTeamResults(status) {
+        const elapsedSecs = (45 * 60) - gameState.timeRemaining;
+        const mins = Math.floor(elapsedSecs / 60);
+        const secs = elapsedSecs % 60;
+        const totalAttempts = gameState.moduleAttempts.reduce((a, b) => a + b, 0);
+
+        const record = {
+            fecha: new Date().toLocaleString(),
+            equipo: gameState.teamName,
+            integrantes: gameState.teamMembers,
+            estado: status,
+            puntaje: gameState.score,
+            tiempo: `${mins}m ${secs}s`,
+            intentosFallidos: totalAttempts,
+            pistas: gameState.hintsUsed.reduce((a, b) => a + b, 0),
+            hash: gameState.verificationHash || 'N/A'
+        };
+
+        let currentLogs = JSON.parse(localStorage.getItem('sst_class_results') || '[]');
+        currentLogs.push(record);
+        localStorage.setItem('sst_class_results', JSON.stringify(currentLogs));
+    }
+
+    function openInstructorModal() { document.getElementById('instructorModal').classList.add('active'); }
+    function closeInstructorModal() { document.getElementById('instructorModal').classList.remove('active'); }
+
+    function checkInstructorPass() {
+        if (document.getElementById('instructorPass').value === 'Kira.2029') {
+            document.getElementById('instructorAuth').style.display = 'none';
+            document.getElementById('instructorContent').style.display = 'block';
+        } else {
+            alert('❌ Contraseña docente incorrecta');
+        }
+    }
+
+    function downloadConsolidatedExcel() {
+        const logs = JSON.parse(localStorage.getItem('sst_class_results') || '[]');
+
+        if (logs.length === 0) {
+            alert("⚠️ Aún no hay equipos registrados en el historial de esta clase.");
+            return;
+        }
+
+        const data = [
+            ["REPORTES ACUMULADOS DE LA CLASE - OPERACIÓN CÓDIGO SST"],
+            ["Fecha de Exportación Docente:", new Date().toLocaleString()],
+            [""],
+            ["FECHA / HORA", "NOMBRE DEL EQUIPO", "INTEGRANTES", "ESTADO", "PUNTAJE (MAX 1000)", "TIEMPO EMPLEADO", "INTENTOS FALLIDOS", "PISTAS USADAS", "HASH DE AUTENTICIDAD"]
+        ];
+
+        logs.forEach(log => {
+            data.push([
+                log.fecha,
+                log.equipo,
+                log.integrantes,
+                log.estado,
+                log.puntaje,
+                log.tiempo,
+                log.intentosFallidos,
+                log.pistas,
+                log.hash
+            ]);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Consolidado_Clase");
+
+        XLSX.writeFile(wb, `Consolidado_Resultados_SST_Clase.xlsx`);
+    }
+
+    function resetAllData() {
+        if (confirm("⚠️ ¿Estás seguro de reiniciar la plataforma y BORRAR todos los resultados acumulados de los equipos?")) {
+            localStorage.removeItem('sst_class_results');
+            alert("✅ Historial limpiado correctamente.");
+            location.reload();
+        }
+    }
+</script>
+
+</body>
+</html>
